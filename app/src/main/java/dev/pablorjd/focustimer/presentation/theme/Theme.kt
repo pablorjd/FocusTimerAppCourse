@@ -1,4 +1,4 @@
-package dev.pablorjd.focustimer.ui.theme
+package dev.pablorjd.focustimer.presentation.theme
 
 import android.app.Activity
 import android.os.Build

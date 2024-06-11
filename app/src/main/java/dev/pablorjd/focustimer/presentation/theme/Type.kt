@@ -1,4 +1,4 @@
-package dev.pablorjd.focustimer.ui.theme
+package dev.pablorjd.focustimer.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

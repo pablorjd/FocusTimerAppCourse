@@ -1,4 +1,4 @@
-package dev.pablorjd.focustimer
+package dev.pablorjd.focustimer.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,7 +13,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import dev.pablorjd.focustimer.ui.theme.FocusTimerTheme
+import dev.pablorjd.focustimer.presentation.theme.FocusTimerTheme
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
+        text = "Hello Persona $name!",
         modifier = modifier
     )
 }
