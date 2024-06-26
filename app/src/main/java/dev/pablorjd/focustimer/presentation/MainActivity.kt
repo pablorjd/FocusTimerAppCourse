@@ -17,8 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.pablorjd.focustimer.presentation.home.HomeScreen
+import dev.pablorjd.focustimer.presentation.home.HomeScreenViewModel
 import dev.pablorjd.focustimer.presentation.theme.FocusTimerTheme
 
+internal val viewModel:HomeScreenViewModel = HomeScreenViewModel()
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +30,7 @@ class MainActivity : ComponentActivity() {
             val windowSize = calculateWindowSizeClass(this)
             FocusTimerTheme(windowSize = windowSize.widthSizeClass) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                    HomeScreen()
+                    HomeScreen(viewModel)
                 }
             }
         }

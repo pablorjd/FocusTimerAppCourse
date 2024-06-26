@@ -15,11 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
@@ -27,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import dev.pablorjd.focustimer.R
+import dev.pablorjd.focustimer.domain.model.TimerTypeEnum
 import dev.pablorjd.focustimer.presentation.components.BorderedIcon
 import dev.pablorjd.focustimer.presentation.components.CircleDot
 import dev.pablorjd.focustimer.presentation.components.CustomButton
@@ -36,7 +41,17 @@ import dev.pablorjd.focustimer.presentation.components.TimerTypeItem
 import dev.pablorjd.focustimer.presentation.theme.FocusTimerTheme
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: HomeScreenViewModel = HomeScreenViewModel()) {
+
+    /**
+     * Variables de Estado
+     */
+    val timeState by remember { mutableStateOf(viewModel.timerValueState) }
+    val timerTypeState by remember { mutableStateOf(viewModel.timerTypeState) }
+    val roundsState by remember { mutableStateOf(viewModel.roundsState) }
+    val todayTimeState by remember { mutableStateOf(viewModel.todayTimeState) }
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,10 +80,18 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(FocusTimerTheme.dimens.spacerMedium))
         CirclesDotHome()
         Spacer(modifier = Modifier.height(FocusTimerTheme.dimens.spacerMedium))
-        TimerSession(timer = "1:50")
+        TimerSession(
+            //se llaman a las variables y funciones del viewModel
+            timer = viewModel.millisToMinutes(timeState.value),
+            onIncreaseTap = { viewModel.onIncreaseTime() },
+            onDecreaseTap = { viewModel.onDecreaseTime() }
+        )
         Spacer(modifier = Modifier.height(FocusTimerTheme.dimens.spacerMedium))
         TimerTypeSession(
-
+            type = timerTypeState.value,
+            onTap = { type ->
+                viewModel.onUpdateTime(type)
+            }
         )
         Spacer(modifier = Modifier.height(FocusTimerTheme.dimens.spacerMedium))
         Column(
@@ -81,7 +104,7 @@ fun HomeScreen() {
                 textColor = MaterialTheme.colorScheme.surface,
                 buttonColor = MaterialTheme.colorScheme.primary,
                 onTap = {
-                    // TODO: implement Logic
+                    viewModel.onStartTimer()
                 }
             )
             CustomButton(
@@ -89,14 +112,14 @@ fun HomeScreen() {
                 textColor = MaterialTheme.colorScheme.primary,
                 buttonColor = MaterialTheme.colorScheme.surface,
                 onTap = {
-                    // TODO: implement Logic
+                    viewModel.onCancelTimer(true)
                 }
             )
         }
         Spacer(modifier = Modifier.height(FocusTimerTheme.dimens.spacerMedium))
         InformationSession(
-            round = "10",
-            time = "45:00"
+            round = roundsState.value.toString(),
+            time = viewModel.millisToHours(todayTimeState.value)
         )
     }
 }
@@ -163,8 +186,9 @@ fun TimerSession(
 @Composable
 fun TimerTypeSession(
     modifier: Modifier = Modifier,
-    onTap: () -> Unit = {}
-) {
+    onTap: (TimerTypeEnum) -> Unit = {},
+    type: TimerTypeEnum,
+    ) {
     val count = 3
     LazyVerticalGrid(
         modifier = modifier
@@ -174,28 +198,17 @@ fun TimerTypeSession(
         horizontalArrangement = Arrangement.spacedBy(FocusTimerTheme.dimens.paddingNormal),
         verticalArrangement = Arrangement.spacedBy(FocusTimerTheme.dimens.paddingNormal)
     ) {
-        item(
-            key = "FT"
-        ) {
+        items(
+            TimerTypeEnum.values(),
+            key = { it.title }
+        ){
             TimerTypeItem(
-                text = "Focus Timer",
-                textColor = MaterialTheme.colorScheme.primary
-            )
-        }
-        item(
-            key = "SB"
-        ) {
-            TimerTypeItem(
-                text = "Short Break",
-                textColor = MaterialTheme.colorScheme.secondary
-            )
-        }
-        item(
-            key = "LB"
-        ) {
-            TimerTypeItem(
-                text = "Long Break",
-                textColor = MaterialTheme.colorScheme.tertiary
+                text = it.title,
+                textColor = if (type == it)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.secondary,
+                onTap = { onTap(it) }
             )
         }
     }
