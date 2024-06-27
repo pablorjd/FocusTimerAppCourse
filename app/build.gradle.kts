@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+
 }
 
 android {
@@ -47,6 +51,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    // Allow references to generated code
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
@@ -70,4 +78,13 @@ dependencies {
 
     //VIEWMODEL
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    //Rooms Database
+    implementation(libs.androidx.room.ktx)
+
+    //Dependency Injection
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.comp)
+    implementation(libs.androidx.hilt.navigation)
 }
+
