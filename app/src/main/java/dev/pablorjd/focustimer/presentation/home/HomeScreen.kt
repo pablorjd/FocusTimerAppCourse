@@ -1,7 +1,6 @@
 package dev.pablorjd.focustimer.presentation.home
 
 import AutoResizedText
-import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,22 +25,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.pablorjd.focustimer.R
 import dev.pablorjd.focustimer.domain.model.TimerTypeEnum
 import dev.pablorjd.focustimer.presentation.components.BorderedIcon
 import dev.pablorjd.focustimer.presentation.components.CircleDot
 import dev.pablorjd.focustimer.presentation.components.CustomButton
-import dev.pablorjd.focustimer.presentation.components.CustomButtonPreview
 import dev.pablorjd.focustimer.presentation.components.InformationItem
 import dev.pablorjd.focustimer.presentation.components.TimerTypeItem
 import dev.pablorjd.focustimer.presentation.theme.FocusTimerTheme
 
 @Composable
-fun HomeScreen(viewModel: HomeScreenViewModel = HomeScreenViewModel()) {
+fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel()) {
 
     /**
      * Variables de Estado

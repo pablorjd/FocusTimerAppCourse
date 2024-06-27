@@ -6,14 +6,18 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_HOUR_IN_MIN
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_MIN_IN_MILLIS
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_MIN_IN_SEC
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_SEC_IN_MILLIS
 import dev.pablorjd.focustimer.domain.model.TimerTypeEnum
 import kotlinx.coroutines.launch
+import java.lang.reflect.Constructor
+import javax.inject.Inject
 
-class HomeScreenViewModel:ViewModel() {
+@HiltViewModel
+class HomeScreenViewModel @Inject constructor(): ViewModel() {
 
     private lateinit var timer:CountDownTimer
     private var isTimerActive:Boolean = false
