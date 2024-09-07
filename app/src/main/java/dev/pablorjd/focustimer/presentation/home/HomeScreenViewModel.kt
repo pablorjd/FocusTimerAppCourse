@@ -1,6 +1,7 @@
 package dev.pablorjd.focustimer.presentation.home
 
 import android.annotation.SuppressLint
+import android.icu.util.Calendar
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
@@ -11,16 +12,26 @@ import dev.pablorjd.focustimer.core.Constants.Companion.ONE_HOUR_IN_MIN
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_MIN_IN_MILLIS
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_MIN_IN_SEC
 import dev.pablorjd.focustimer.core.Constants.Companion.ONE_SEC_IN_MILLIS
+import dev.pablorjd.focustimer.domain.model.Resource
+import dev.pablorjd.focustimer.domain.model.TimerSessionModel
 import dev.pablorjd.focustimer.domain.model.TimerTypeEnum
+import dev.pablorjd.focustimer.domain.usecase.GetTimerSessionByDateUseCase
+import dev.pablorjd.focustimer.domain.usecase.SaveTimerSessionUseCase
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.lang.reflect.Constructor
+import java.text.SimpleDateFormat
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor(): ViewModel() {
+class HomeScreenViewModel @Inject constructor(
+    private val getTimerSessionByDateUseCase: GetTimerSessionByDateUseCase,
+    private val saveTimerSessionUseCase: SaveTimerSessionUseCase
+) : ViewModel() {
 
-    private lateinit var timer:CountDownTimer
-    private var isTimerActive:Boolean = false
+    private lateinit var timer: CountDownTimer
+    private var isTimerActive: Boolean = false
     private val _timerValue = mutableStateOf(TimerTypeEnum.FOCUS.timeToMillis())
     val timerValueState = _timerValue
 
@@ -33,15 +44,19 @@ class HomeScreenViewModel @Inject constructor(): ViewModel() {
     private val _todayTimeState = mutableStateOf<Long>(0)
     val todayTimeState = _todayTimeState
 
+    var _sessionTimerValue: Long = 0
+
+
     fun onStartTimer() {
         viewModelScope.launch {
-            timer = object: CountDownTimer(
+            timer = object : CountDownTimer(
                 _timerValue.value,
                 ONE_SEC_IN_MILLIS
             ) {
                 override fun onTick(millisUntilFinished: Long) {
                     _timerValue.value = millisUntilFinished
                     _todayTimeState.value += ONE_SEC_IN_MILLIS
+                    _sessionTimerValue += ONE_SEC_IN_MILLIS
                 }
 
                 override fun onFinish() {
@@ -50,6 +65,7 @@ class HomeScreenViewModel @Inject constructor(): ViewModel() {
             }
             timer.start().also {
                 if (!isTimerActive) _roundsState.value += 1
+                _sessionTimerValue = 0
                 isTimerActive = true
             }
         }
@@ -58,38 +74,79 @@ class HomeScreenViewModel @Inject constructor(): ViewModel() {
     fun onCancelTimer(reset: Boolean = false) {
         try {
             if (::timer.isInitialized) {
+                saveTimerSession()
                 timer.cancel()
                 _roundsState.value = 0
                 isTimerActive = false
                 _todayTimeState.value = 0
             }
-        }catch (error:UninitializedPropertyAccessException) {
-            Log.i("PABLOERRO",error.toString())
+        } catch (error: UninitializedPropertyAccessException) {
+            Log.i("PABLOERRO", error.toString())
         }
         if (!isTimerActive || reset) {
             _timerValue.value = _timerTypeState.value.timeToMillis()
         }
     }
+
     private fun onResetTime() {
         if (isTimerActive) {
             onCancelTimer()
             onStartTimer()
         }
     }
-    fun onUpdateTime(timerTypeEnum:TimerTypeEnum) {
+
+    fun onUpdateTime(timerTypeEnum: TimerTypeEnum) {
         _timerTypeState.value = timerTypeEnum
         onCancelTimer(true)
     }
+
     fun onIncreaseTime() {
         _timerValue.value += ONE_MIN_IN_MILLIS
         onResetTime()
     }
+
     fun onDecreaseTime() {
         _timerValue.value -= ONE_MIN_IN_MILLIS
         onResetTime()
         if (_timerValue.value < 0) {
             onCancelTimer()
         }
+    }
+
+    fun getTimerSessionByDate() {
+        getTimerSessionByDateUseCase(date = getCurrentDate()).onEach { result ->
+            if (result is Resource.Success) {
+                _roundsState.value = result.date?.round ?: 0
+                _todayTimeState.value = result.date?.value ?: 0
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun saveTimerSession(){
+        val session = TimerSessionModel(
+            date = getCurrentDate(),
+            value = _sessionTimerValue
+        )
+        saveTimerSessionUseCase(timerSessionModel = session).onEach { result ->
+            when(result) {
+                is Resource.Success -> {
+                    _sessionTimerValue = 0
+                }
+                is Resource.Loading -> {
+
+                }
+                is Resource.Error -> {
+
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun getCurrentDate(): String {
+        val currentDate = Calendar.getInstance().time
+        val formatter = SimpleDateFormat("dd-MMMM-yyyy")
+        return formatter.format(currentDate)
     }
 
     @SuppressLint("DefaultLocale")

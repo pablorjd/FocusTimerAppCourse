@@ -80,6 +80,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     //Rooms Database
+
+    implementation(libs.androidx.room.runtime)
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
     //Dependency Injection

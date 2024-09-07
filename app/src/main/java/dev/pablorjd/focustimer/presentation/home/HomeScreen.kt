@@ -20,15 +20,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import dev.pablorjd.focustimer.R
 import dev.pablorjd.focustimer.domain.model.TimerTypeEnum
 import dev.pablorjd.focustimer.presentation.components.BorderedIcon
@@ -48,6 +52,13 @@ fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel()) {
     val timerTypeState by remember { mutableStateOf(viewModel.timerTypeState) }
     val roundsState by remember { mutableStateOf(viewModel.roundsState) }
     val todayTimeState by remember { mutableStateOf(viewModel.todayTimeState) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.getTimerSessionByDate()
+        }
+    }
 
 
     Column(
@@ -186,7 +197,7 @@ fun TimerTypeSession(
     modifier: Modifier = Modifier,
     onTap: (TimerTypeEnum) -> Unit = {},
     type: TimerTypeEnum,
-    ) {
+) {
     val count = 3
     LazyVerticalGrid(
         modifier = modifier
@@ -199,7 +210,7 @@ fun TimerTypeSession(
         items(
             TimerTypeEnum.values(),
             key = { it.title }
-        ){
+        ) {
             TimerTypeItem(
                 text = it.title,
                 textColor = if (type == it)
@@ -232,9 +243,11 @@ fun InformationSession(
                 text = round,
                 label = "rounds"
             )
-            Spacer(modifier = modifier
-                .fillMaxWidth()
-                .weight(1f))
+            Spacer(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
             InformationItem(
                 modifier = modifier
                     .fillMaxWidth()
